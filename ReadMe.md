@@ -1,2 +1,2 @@
 ### Hello ThreeJS
-https://hellothreejs-tan.vercel.app/
+https://debugthreejs.vercel.app/
