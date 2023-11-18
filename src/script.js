@@ -3,6 +3,33 @@ import {
 	OrbitControls
 } from 'three/addons/controls/OrbitControls.js'
 
+import GUI from 'lil-gui'
+import gsap from 'gsap'
+
+//
+//  Debug
+//
+const gui = new GUI(
+	{
+		width:400,
+		title:'Debug UI',
+		closeFolders:false
+	}
+)
+
+window.addEventListener('keydown',(event)=>{
+	if(event.key == 'h')
+	{
+		gui.show(gui._hidden)
+	}
+})
+
+const debugObject = {
+	
+}
+
+var guiFolder = gui.addFolder('Cube Pane')
+
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
 
@@ -11,18 +38,47 @@ const canvas = document.querySelector('canvas.webgl')
 const scene = new THREE.Scene()
 
 // Create a Mesh
-const boxGeometry = new THREE.BoxGeometry(1, 1, 1)
+const boxGeometry = new THREE.BoxGeometry(1, 1, 1,4,4,4)
+
+debugObject.color = '#33aabb'
 const material = new THREE.MeshBasicMaterial({
-	color: 0x00ff22,
-	wireframe: false
+	color: debugObject.color,
+	wireframe: true
 })
 const mesh = new THREE.Mesh(boxGeometry, material)
 mesh.position.set(1, 1, 1)
 scene.add(mesh)
 
+guiFolder.add(mesh.position,'y').min(0).max(10).step(1).name('Elevation')
+
+guiFolder.add(mesh,'visible').name('Visibility')
+guiFolder.add(mesh.material,'wireframe').name('Wireframe')
+guiFolder.addColor(debugObject,'color').name('Color').onChange(()=>{
+	//console.log(mesh.material.color.getHexString())
+	mesh.material.color.set(debugObject.color)
+})
+
+debugObject.subdivisions =2
+
+guiFolder.add(debugObject,'subdivisions').min(2).max(10).step(1).onFinishChange(()=>{
+	mesh.geometry.dispose()
+	mesh.geometry = new THREE.BoxGeometry(1,1,1,debugObject.subdivisions,debugObject.subdivisions,debugObject.subdivisions)
+
+})
+
+debugObject.spin = () => {
+
+	gsap.to(mesh.rotation,{y:mesh.rotation.y + Math.PI*2})
+}
+guiFolder.add(debugObject,'spin')
+
+
+
+
+
 // Create a Camera
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 1000)
-camera.position.set(0, 0, 10)
+camera.position.set(0, 1, 10)
 scene.add(camera)
 
 
@@ -86,8 +142,9 @@ controls.update()
 function animate() {
 
 	requestAnimationFrame(animate)
-	camera.lookAt(mesh.position)
+	//camera.lookAt(mesh.position)
 	renderer.render(scene, camera)
 }
+
 
 animate()
